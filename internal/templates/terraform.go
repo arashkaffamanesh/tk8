@@ -23,3 +23,11 @@ default_tags = {
     Product = "kubernetes"
 }
 `
+var TerraformEKS = `
+cluster-name = "{{.ClusterName}}"
+aws-region = "{{.AwsRegion}}"
+node-instance-type = "{{.NodeInstanceType}}"
+desired-capacity = "{{.DesiredCapacity}}"
+autoscalling-max-size =  "{{.AutoScallingMaxSize}}"
+autoscalling-min-size =  "{{.AutoScallingMinSize}}"
+`

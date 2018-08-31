@@ -73,6 +73,17 @@ type ClusterConfig struct {
 	KubeInsecureApiserverAddress string
 }
 
+type EKSConfig struct {
+	AwsClusterName      string
+	AwsRegion           string
+	AwsAccessKeyID      string
+	AwsSecretKey        string
+	NodeInstanceType    string
+	DesiredCapacity     string
+	AutoScallingMaxSize string
+	AutoScallingMinSize string
+}
+
 // ReadViperConfigFile is define the config paths and read the configuration file.
 func ReadViperConfigFile(configName string) {
 	viper.SetConfigName(configName)
@@ -103,6 +114,20 @@ func GetCredentials() AwsCredentials {
 		AwsSecretKey:     viper.GetString("aws.aws_secret_access_key"),
 		AwsAccessSSHKey:  viper.GetString("aws.aws_ssh_keypair"),
 		AwsDefaultRegion: viper.GetString("aws.aws_default_region"),
+	}
+}
+
+func GetEKSConfig() EKSConfig {
+	ReadViperConfigFile("config")
+	return EKSConfig{
+		AwsClusterName:      viper.GetString("aws.clustername"),
+		AwsRegion:           viper.GetString("eks.aws_region"),
+		AwsAccessKeyID:      viper.GetString("eks.aws_access_key_id"),
+		AwsSecretKey:        viper.GetString("eks.aws_secret_access_key"),
+		NodeInstanceType:    viper.GetString("eks.node-instance-type"),
+		DesiredCapacity:     viper.GetString("eks.desired-capacity"),
+		AutoScallingMaxSize: viper.GetString("eks.autoscalling-max-size"),
+		AutoScallingMinSize: viper.GetString("eks.autoscalling-min-size"),
 	}
 }
 

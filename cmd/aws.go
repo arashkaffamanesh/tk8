@@ -21,8 +21,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var install, create, destroy bool
-
 // awsCmd represents the aws command
 var awsCmd = &cobra.Command{
 	Use:   "aws",

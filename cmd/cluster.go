@@ -20,6 +20,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var install, create, destroy bool
+
 // clusterCmd represents the cluster command
 var clusterCmd = &cobra.Command{
 	Use:   "cluster",
