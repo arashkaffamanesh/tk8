@@ -25,18 +25,8 @@ func EKSCreate() {
 
 	log.Println(string(rr))
 
-	log.Println("Checking AWS Credentials")
-
-	if os.Getenv("AWS_ACCESS_KEY_ID") == "" {
-		log.Fatalln("AWS_ACCESS_KEY_ID not exported as environment variable, kindly check")
-	}
-
-	if os.Getenv("AWS_SECRET_ACCESS_KEY") == "" {
-		log.Fatalln("AWS_SECRET_ACCESS_KEY not exported as environment variable, kindly check")
-	}
-
 	go parseTemplate(templates.Credentials, "./eks/credentials.tfvars", GetCredentials())
-	go parseTemplate(templates.TerraformEKS, "./kubespray/contrib/terraform/aws/terraform.tfvars", GetEKSConfig())
+	go parseTemplate(templates.TerraformEKS, "./eks/terraform.tfvars", GetEKSConfig())
 
 	//Check if kubectl version is greater or equal to 1.10
 
@@ -55,22 +45,8 @@ func EKSCreate() {
 	if _, err := exec.LookPath("aws-iam-authenticator"); err != nil {
 		log.Fatalln("AWS Authenticator binary not found")
 	}
-
-	// Check if terraform binary is present in the working directory
-	if _, err := os.Stat("./terraform"); err != nil {
-		log.Fatalln("Terraform binary not found in the installation folder")
-	}
-
-	log.Println("Terraform binary exists in the installation folder, terraform version:")
-
-	terr, err := exec.Command("./terraform", "version").Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(string(terr))
-
 	// Check if a terraform state file aclready exists
-	if _, err := os.Stat("./terraform.tfstate"); err == nil {
+	if _, err := os.Stat("./eks/terraform.tfstate"); err == nil {
 		log.Fatalln("There is an existing cluster, please remove terraform.tfstate file or delete the installation before proceeding")
 	}
 
@@ -111,7 +87,7 @@ func EKSCreate() {
 	kubeconf := exec.Command("terraform", "output", "kubeconfig")
 
 	// open the out file for writing
-	outfile, err := os.Create("./kubeconfig")
+	outfile, err := os.Create("./eks/kubeconfig")
 	if err != nil {
 		panic(err)
 	}
@@ -135,7 +111,7 @@ func EKSCreate() {
 	confmap := exec.Command("terraform", "output", "config-map")
 
 	// open the out file for writing
-	outconf, err := os.Create("./config-map-aws-auth.yaml")
+	outconf, err := os.Create("./eks/config-map-aws-auth.yaml")
 	if err != nil {
 		panic(err)
 	}
@@ -151,8 +127,8 @@ func EKSCreate() {
 	// Create Worker nodes usign the Configmap created above
 
 	log.Println("Creating Worker Nodes")
-	WorkerNodeSet := exec.Command("kubectl", "--kubeconfig", "./kubeconfig", "apply", "-f", "./config-map-aws-auth.yaml")
-	WorkerNodeSet.Dir = "./"
+	WorkerNodeSet := exec.Command("kubectl", "--kubeconfig", "./eks/kubeconfig", "apply", "-f", "./eks/config-map-aws-auth.yaml")
+	WorkerNodeSet.Dir = "./eks"
 
 	workerNodeOut, err := WorkerNodeSet.Output()
 	if err != nil {
@@ -167,21 +143,9 @@ func EKSCreate() {
 }
 
 func EKSDestroy() {
-	// Check if terraform binary is present in the working directory
-	if _, err := os.Stat("./terraform"); err != nil {
-		log.Fatalln("Terraform binary not found in the installation folder")
-	}
-
-	log.Println("Terraform binary exists in the installation folder, terraform version:")
-
-	terr, err := exec.Command("./terraform", "version").Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(string(terr))
 
 	// Check if a terraform state file already exists
-	if _, err := os.Stat("./terraform.tfstate"); err != nil {
+	if _, err := os.Stat("./eks/terraform.tfstate"); err != nil {
 		log.Fatalln("Terraform.tfstate file not found, seems there is no existing cluster definition in this directory")
 	}
 
@@ -190,7 +154,7 @@ func EKSDestroy() {
 	log.Println("starting terraform destroy")
 
 	terrDel := exec.Command("terraform", "destroy", "-force")
-	terrDel.Dir = "./"
+	terrDel.Dir = "./eks"
 	out, _ := terrDel.StdoutPipe()
 	terrDel.Start()
 	scanDel := bufio.NewScanner(out)
@@ -205,7 +169,7 @@ func EKSDestroy() {
 
 	log.Println("Removing the terraform state file")
 
-	err = os.Remove("./terraform.tfstate")
+	err := os.Remove("./eks/terraform.tfstate")
 	if err != nil {
 		fmt.Println(err)
 	}
