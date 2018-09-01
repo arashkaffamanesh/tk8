@@ -35,3 +35,15 @@ variable "min-size" {
   type        = "string"
   description = "Autoscaling Minimum node capacity"
 }
+
+variable "aws_access_key" {
+  default     = "not set"
+  type        = "string"
+  description = "AWS access key"
+}
+variable "aws_secret_key" {
+  default     = "not set"
+  type        = "string"
+  description = "AWS secret key"
+}
+

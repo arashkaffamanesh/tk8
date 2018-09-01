@@ -41,10 +41,6 @@ func EKSCreate() {
 		log.Fatalln("kubectl client version on this system is less than the required version 1.10.0")
 	}
 
-	// Check if AWS authenticator binary is present in the working directory
-	if _, err := exec.LookPath("aws-iam-authenticator"); err != nil {
-		log.Fatalln("AWS Authenticator binary not found")
-	}
 	// Check if a terraform state file aclready exists
 	if _, err := os.Stat("./eks/terraform.tfstate"); err == nil {
 		log.Fatalln("There is an existing cluster, please remove terraform.tfstate file or delete the installation before proceeding")
@@ -66,8 +62,13 @@ func EKSCreate() {
 
 	terrInit.Wait()
 
+	// Check if AWS authenticator binary is present in the working directory
+	if _, err := exec.LookPath("aws-iam-authenticator"); err != nil {
+		log.Fatalln("AWS Authenticator binary not found")
+	}
+
 	log.Println("starting terraform apply")
-	terrSet := exec.Command("terraform", "apply", "-auto-approve")
+	terrSet := exec.Command("terraform", "apply", "-var-file=credentials.tfvars", "-auto-approve")
 	terrSet.Dir = "./eks"
 	stdout, err := terrSet.StdoutPipe()
 	terrSet.Stderr = terrSet.Stdout

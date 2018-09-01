@@ -74,10 +74,8 @@ type ClusterConfig struct {
 }
 
 type EKSConfig struct {
-	AwsClusterName      string
+	ClusterName         string
 	AwsRegion           string
-	AwsAccessKeyID      string
-	AwsSecretKey        string
 	NodeInstanceType    string
 	DesiredCapacity     string
 	AutoScallingMaxSize string
@@ -120,10 +118,8 @@ func GetCredentials() AwsCredentials {
 func GetEKSConfig() EKSConfig {
 	ReadViperConfigFile("config")
 	return EKSConfig{
-		AwsClusterName:      viper.GetString("aws.clustername"),
+		ClusterName:         viper.GetString("aws.clustername"),
 		AwsRegion:           viper.GetString("eks.aws_region"),
-		AwsAccessKeyID:      viper.GetString("eks.aws_access_key_id"),
-		AwsSecretKey:        viper.GetString("eks.aws_secret_access_key"),
 		NodeInstanceType:    viper.GetString("eks.node-instance-type"),
 		DesiredCapacity:     viper.GetString("eks.desired-capacity"),
 		AutoScallingMaxSize: viper.GetString("eks.autoscalling-max-size"),
